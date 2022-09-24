@@ -8,6 +8,7 @@ import { MongooseModule, MongooseModuleAsyncOptions } from '@nestjs/mongoose';
 import { AppConfigService } from '@modules/config/services';
 import { SharedModule } from '@modules/shared/shared.module';
 import { UserModule } from './user/user.module';
+import { TaskModule } from './task/task.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { UserModule } from './user/user.module';
     UserModule,
     AppConfigModule,
     SharedModule,
+    TaskModule,
   ],
   controllers: [AppController],
   providers: [AppService],

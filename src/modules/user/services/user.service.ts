@@ -4,6 +4,7 @@ import { LeanDocument, Model } from 'mongoose';
 import { User, UserDocument } from '@modules/user/schemas';
 import { SharedService } from '@modules/shared/services';
 import { NotAcceptable } from '@modules/shared/exceptions';
+import { Roles } from '@modules/shared/enums';
 
 @Injectable()
 export class UserService {
@@ -43,6 +44,30 @@ export class UserService {
   async findAll(): Promise<UserDocument[]> {
     try {
       return this.userModel.find().exec();
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
+   * update user to admin
+   * @param {string} id
+   * @param {string} userId user who is requesting
+   */
+  async updateToAdmin(id: string, userId: string): Promise<any> {
+    try {
+      this.sharedService.validateObjectId(id);
+
+      const user = await this.userModel.findById(userId);
+      if (!user) {
+        throw new NotAcceptable('User not found');
+      }
+
+      if (user.role !== Roles.ADMINISTRATOR) {
+        throw new NotAcceptable('User do not have required permissions');
+      }
+
+      await this.userModel.findByIdAndUpdate(id, { role: Roles.ADMINISTRATOR });
     } catch (e) {
       throw e;
     }
