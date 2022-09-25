@@ -24,8 +24,8 @@ import global from './constants/global';
         NODE_ENV: Joi.string()
           .valid('development', 'production', 'staging', 'provision')
           .default('development'),
-        APP_URL: Joi.string().default('http://localhost:3000'),
-        APP_PORT: Joi.number().default(3000),
+        APP_URL: Joi.string().default('http://localhost:3001'),
+        APP_PORT: Joi.number().default(3001),
         WEBTOKEN_SECRET_KEY: Joi.string().required(),
         WEBTOKEN_EXPIRATION_TIME: Joi.number().default(526000),
         DB_PASSWORD: Joi.string().required(),
