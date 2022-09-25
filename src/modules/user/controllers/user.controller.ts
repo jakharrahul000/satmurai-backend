@@ -5,29 +5,15 @@ import {
   Request,
   Patch,
   Param,
+  Body,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '@modules/auth/guard';
 import { UserService } from '@modules/user/services';
+import { ChangeUserRoleDto } from '../dto';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
-  /**
-   * route to get user by id
-   * @param req req object
-   */
-  @Get()
-  @UseGuards(JwtAuthGuard)
-  async findOne(@Request() req): Promise<any> {
-    const user = await this.userService.findOne(req.user.userId);
-
-    return {
-      status: 'success',
-      message: 'Successfully fetched user',
-      data: user,
-    };
-  }
 
   /**
    * route to get all users
@@ -45,14 +31,34 @@ export class UserController {
   }
 
   /**
+   * route to get user by id
+   * @param req req object
+   */
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  async findOne(@Param('id') id: string): Promise<any> {
+    const user = await this.userService.findOne(id);
+
+    return {
+      status: 'success',
+      message: 'Successfully fetched user',
+      data: user,
+    };
+  }
+
+  /**
    * route to update user to admin
    * @param {string} id
    * @param req request object
    */
-  @Patch(':id')
+  @Patch(':id/changeUserRole')
   @UseGuards(JwtAuthGuard)
-  async updateToAdmin(@Param('id') id: string, @Request() req): Promise<any> {
-    await this.userService.updateToAdmin(id, req.user.userId);
+  async changeUserRole(
+    @Param('id') id: string,
+    @Request() req,
+    @Body() payload: ChangeUserRoleDto,
+  ): Promise<any> {
+    await this.userService.changeUserRole(id, req.user.userId, payload);
 
     return {
       status: 'success',

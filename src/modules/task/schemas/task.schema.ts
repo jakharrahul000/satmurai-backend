@@ -29,6 +29,7 @@ export class Task {
   })
   priority: number;
 
+  @Prop({ type: String })
   description: string;
 
   @Prop({

@@ -166,27 +166,43 @@ export class TaskService {
         throw new NotAcceptable('User not found');
       }
 
+      let newPayload = payload.assignees;
       if (user.role === Roles.COLLABORATOR) {
-        if (
-          userId.toString() !== task.owner.toString() ||
-          payload.assignees.length > 0 ||
-          payload.assignees[0] !== userId
-        ) {
+        if (userId.toString() !== task.owner.toString()) {
           throw new NotAcceptable('User do not have required permissions');
+        }
+
+        if (payload.assignees.length > 1)
+          throw new NotAcceptable('User do not have required permissions');
+
+        if (task.assignees.length === 0) {
+          if (payload.assignees.length !== 1 || payload.assignees[0] !== userId)
+            throw new NotAcceptable('User do not have required permissions');
+        } else if (task.assignees.length === 1) {
+          if (task.assignees[0].toString() === userId) {
+            if (payload.assignees.length !== 0)
+              throw new NotAcceptable('User do not have required permissions');
+          } else {
+            newPayload = [];
+            newPayload.push(task.assignees[0].toString());
+            if (payload.assignees[0] !== userId)
+              throw new NotAcceptable('User do not have required permissions');
+            newPayload.push(userId);
+          }
+        } else {
+          const taskAssignee = task.assignees;
+          newPayload = [];
+          taskAssignee.forEach((row) => {
+            if (row.toString() !== userId) newPayload.push(row);
+          });
+          if (payload.assignees.length === 1 && payload.assignees[0] === userId)
+            newPayload.push(userId);
         }
       }
 
-      const assignees = { ...task.assignees };
-      payload.assignees.forEach((assignee) => {
-        const index = assignees.indexOf(assignee);
-        if (index === -1) {
-          assignees.push(assignee);
-        } else {
-          assignees.splice(index, 1);
-        }
+      await this.taskModel.findByIdAndUpdate(taskId, {
+        assignees: newPayload,
       });
-
-      await this.taskModel.findByIdAndUpdate(taskId, { assignees });
     } catch (e) {
       throw e;
     }

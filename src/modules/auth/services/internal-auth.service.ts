@@ -34,7 +34,6 @@ export class InternalAuthService {
         expires: this.expiration,
         token: this.jwtService.sign({
           _id: payload._id,
-          email: payload.email,
         }),
       };
     } catch (e) {

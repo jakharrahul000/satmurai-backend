@@ -5,6 +5,7 @@ import { User, UserDocument } from '@modules/user/schemas';
 import { SharedService } from '@modules/shared/services';
 import { NotAcceptable } from '@modules/shared/exceptions';
 import { Roles } from '@modules/shared/enums';
+import { ChangeUserRoleDto } from '../dto';
 
 @Injectable()
 export class UserService {
@@ -53,8 +54,13 @@ export class UserService {
    * update user to admin
    * @param {string} id
    * @param {string} userId user who is requesting
+   * @param {ChangeUserRoleDto} payload
    */
-  async updateToAdmin(id: string, userId: string): Promise<any> {
+  async changeUserRole(
+    id: string,
+    userId: string,
+    payload: ChangeUserRoleDto,
+  ): Promise<any> {
     try {
       this.sharedService.validateObjectId(id);
 
@@ -67,7 +73,17 @@ export class UserService {
         throw new NotAcceptable('User do not have required permissions');
       }
 
-      await this.userModel.findByIdAndUpdate(id, { role: Roles.ADMINISTRATOR });
+      if (payload.role === Roles.COLLABORATOR) {
+        const allAdmins = await this.userModel.find({
+          role: Roles.ADMINISTRATOR,
+        });
+
+        if (allAdmins.length === 1) {
+          throw new NotAcceptable('Cannot change role of the last admin');
+        }
+      }
+
+      await this.userModel.findByIdAndUpdate(id, { role: payload.role });
     } catch (e) {
       throw e;
     }
